@@ -7,12 +7,15 @@ import subprocess
 import logging
 import mimetypes
 import StringIO
+from distutils.sysconfig import get_python_lib
+
 from PIL import Image
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-BASE_PATH = './vendor/linux/'
+DEBUG = os.getenv('DEBUG', False)
+BASE_PATH = './vendor/linux/' if DEBUG else '%s/opt/optimize-images/vendor/linux/' % get_python_lib()
 TMP_DIR = '/tmp/'
 
 libraries = {

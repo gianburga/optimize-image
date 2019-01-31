@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/francoburga/optimize-image",
     packages=setuptools.find_packages(),
     data_files=[
-        ('local/optimize-image/vendor/', ['vendor/linux/cjpeg']),
+        ('/opt/optimize-image/vendor/linux/', ['vendor/linux/cjpeg']),
     ],
     install_requires=[
         'Pillow==5.4.1',
