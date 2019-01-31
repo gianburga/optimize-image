@@ -36,7 +36,7 @@ def optimize_image(source, quality=80):
         raise ValueError('\'%s\' file does not exist' % source)
 
     path, extension = os.path.splitext(source)
-    content_type = mimetypes.guess_type(source)
+    content_type = mimetypes.guess_type(source)[0]
     file_path, filename = path = path.rsplit('/', 1)
 
     file_tmp_dir = get_tmp_dir()
