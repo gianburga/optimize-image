@@ -42,12 +42,10 @@ def optimize_image(source, quality=80):
     file_tmp_dir = get_tmp_dir()
     destination = '%s%s%s' % (file_tmp_dir, filename, extension)
 
-    os.mkdir(file_tmp_dir)
-
+    command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source]
     logger.debug('command: %s', command)
 
-    command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source]
-
+    os.mkdir(file_tmp_dir)
     subprocess.call(command)
 
     original_size = os.path.getsize(source)
