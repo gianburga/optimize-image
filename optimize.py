@@ -41,6 +41,9 @@ def optimize_image(source, quality=80):
     destination = '%s%s%s' % (file_tmp_dir, filename, extension)
 
     os.mkdir(file_tmp_dir)
+
+    logger.debug('command: %s', command)
+
     command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source]
 
     subprocess.call(command)
@@ -51,7 +54,6 @@ def optimize_image(source, quality=80):
     logger.debug('original filename: %s', filename)
     logger.debug('original size: %3.1f %s', format_bytes(original_size)[0], format_bytes(original_size)[1])
     logger.debug('content-type: %s', content_type)
-    logger.debug('command: %s', command)
 
     logger.debug('optimize filename: %s', destination)
     logger.debug('optimize size: %3.1f %s', format_bytes(optimize_size)[0], format_bytes(original_size)[1])
