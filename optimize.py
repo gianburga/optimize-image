@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import logging
-from utils.images import optimize_image
+from optimize_image.utils.images import optimize_image
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
