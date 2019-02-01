@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='optimize-image',  
-    version='0.2',
+    version='0.3',
     scripts=['optimize.py'] ,
     author="Franco Burga",
     author_email="franco.burga@gmail.com",
