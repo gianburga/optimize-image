@@ -3,7 +3,7 @@ import uuid
 import logging
 import mimetypes
 import subprocess
-import StringIO
+import io
 from distutils.sysconfig import get_python_lib
 
 from PIL import Image
@@ -71,9 +71,13 @@ def optimize_image(source_path=None, image=None, filename=None, quality=80):
     logger.debug('optimize size: %3.1f %s', format_bytes(optimize_size)[0], format_bytes(original_size)[1])
     logger.debug('%.0f%% smaller', 100 - ((float(optimize_size) / float(original_size)) * 100))
 
-    buffer_image = file(destination).read()
+    f = open(destination, 'rb')
+    buffer_image = io.BytesIO(f.read())
+    f.close()
+
     os.remove(destination)
-    image = Image.open(StringIO.StringIO(buffer_image))
+
+    image = Image.open(buffer_image)
 
     return {
         'filename': filename, 
