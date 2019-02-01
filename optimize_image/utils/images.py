@@ -31,24 +31,36 @@ def get_tmp_dir():
     return '%s%s/' % (TMP_DIR, str(uuid.uuid4())[-10:])
 
 
-def optimize_image(source, quality=80):
-    if not os.path.exists(source):
-        raise ValueError('\'%s\' file does not exist' % source)
+def optimize_image(source_path=None, image=None, filename=None, quality=80):
+    if source_path and not os.path.exists(source_path):
+        raise ValueError('\'%s\' file path does not exist' % source_path)
 
-    path, extension = os.path.splitext(source)
-    content_type = mimetypes.guess_type(source)[0]
-    file_path, filename = path = path.rsplit('/', 1)
+    if source_path is None and image and isinstance(image, Image.Image):
+        if not filename:
+            raise ValueError('filename is required')
 
-    file_tmp_dir = get_tmp_dir()
-    destination = '%s%s%s' % (file_tmp_dir, filename, extension)
+        filename, extension = os.path.splitext(filename)
+        content_type = mimetypes.guess_type(filename)[0]
+        tmp_dir_source = get_tmp_dir()
+        source_path = '%s%s%s' % (tmp_dir_source, filename, extension)
+        os.mkdir(tmp_dir_source)
+        image.save(source_path)
 
-    command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source]
+    if source_path:
+        path, extension = os.path.splitext(source_path)
+        content_type = mimetypes.guess_type(source_path)[0]
+        file_path, filename = path = path.rsplit('/', 1)
+
+        file_tmp_dir = get_tmp_dir()
+        destination = '%s%s%s' % (file_tmp_dir, filename, extension)
+
+    command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source_path]
     logger.debug('command: %s', command)
 
     os.mkdir(file_tmp_dir)
     subprocess.call(command)
 
-    original_size = os.path.getsize(source)
+    original_size = os.path.getsize(source_path)
     optimize_size = os.path.getsize(destination)
 
     logger.debug('original filename: %s', filename)
