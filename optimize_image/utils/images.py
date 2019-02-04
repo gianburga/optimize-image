@@ -31,38 +31,74 @@ def get_tmp_dir():
     return '%s%s/' % (TMP_DIR, str(uuid.uuid4())[-10:])
 
 
-def optimize_image(source_path=None, image=None, filename=None, quality=80):
+def create_temp_image_from_buffer(image_buffer, path):
+    image_file = open(path, 'wb')
+    image_file.write(image_buffer.getvalue())
+    image_file.close()
+
+
+def get_buffer_from_file(path, delete=False):
+    image_file = open(path, 'rb')
+    buffer_image = io.BytesIO(image_file.read())
+    image_file.close()
+
+    if delete:
+        os.remove(path)
+
+    return buffer_image
+
+
+def get_file_size(path):
+    return os.path.getsize(path)
+
+
+def run_command(command):
+    logger.debug('command: %s', command)
+    subprocess.call(command)
+
+
+def optimize_image(source_path=None, image_buffer=None, filename=None, quality=80):
     if source_path and not os.path.exists(source_path):
         raise ValueError('\'%s\' file path does not exist' % source_path)
 
-    if source_path is None and image and isinstance(image, Image.Image):
+    tmp_dir = get_tmp_dir()
+    os.mkdir(tmp_dir)
+
+    if source_path is None and image_buffer:
         if not filename:
             raise ValueError('filename is required')
 
+        logger.debug('image_buffer type: %s', type(image_buffer))
+
+        if not isinstance(image_buffer, (io.BytesIO, io.BufferedReader)):
+            raise ValueError('image is not Image instance')
+
+        if isinstance(image_buffer, io.BufferedReader):
+            image_buffer = io.BytesIO(image_buffer.read())
+
         filename, extension = os.path.splitext(filename)
-        content_type = mimetypes.guess_type(filename)[0]
-        tmp_dir_source = get_tmp_dir()
-        source_path = '%s%s%s' % (tmp_dir_source, filename, extension)
-        os.mkdir(tmp_dir_source)
-        image.save(source_path)
+
+        if not extension:
+            raise ValueError('filename extension is None')
+
+        source_path = '%s%s%s' % (tmp_dir, filename, extension)
+        logger.debug('source_path: %s', source_path)
+        create_temp_image_from_buffer(image_buffer, source_path)
 
     if source_path:
         path, extension = os.path.splitext(source_path)
         content_type = mimetypes.guess_type(source_path)[0]
         file_path, filename = path = path.rsplit('/', 1)
 
-        file_tmp_dir = get_tmp_dir()
-        destination = '%s%s%s' % (file_tmp_dir, filename, extension)
+        destination = '%s%s.optimize.%s' % (tmp_dir, filename, extension)
 
     command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source_path]
-    logger.debug('command: %s', command)
+    run_command(command)
 
-    os.mkdir(file_tmp_dir)
-    subprocess.call(command)
+    original_size = get_file_size(source_path)
+    optimize_size = get_file_size(destination)
 
-    original_size = os.path.getsize(source_path)
-    optimize_size = os.path.getsize(destination)
-
+    logger.debug('quality: %s', quality)
     logger.debug('original filename: %s', filename)
     logger.debug('original size: %3.1f %s', format_bytes(original_size)[0], format_bytes(original_size)[1])
     logger.debug('content-type: %s', content_type)
@@ -71,12 +107,7 @@ def optimize_image(source_path=None, image=None, filename=None, quality=80):
     logger.debug('optimize size: %3.1f %s', format_bytes(optimize_size)[0], format_bytes(original_size)[1])
     logger.debug('%.0f%% smaller', 100 - ((float(optimize_size) / float(original_size)) * 100))
 
-    f = open(destination, 'rb')
-    buffer_image = io.BytesIO(f.read())
-    f.close()
-
-    os.remove(destination)
-
+    buffer_image = get_buffer_from_file(destination)
     image = Image.open(buffer_image)
 
     return {
