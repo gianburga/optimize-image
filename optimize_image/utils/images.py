@@ -12,12 +12,21 @@ DEBUG = os.getenv('DEBUG', False)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-BASE_PATH = './vendor/linux/' if DEBUG else '%s/opt/optimize-images/vendor/linux/' % get_python_lib()
 TMP_DIR = '/tmp/'
 
 libraries = {
     'mozjpeg': 'cjpeg'
 }
+
+
+def get_lib_path(name):
+    if os.path.exists('./vendor/linux/%s' % name):
+        return './vendor/linux/%s' % name
+    elif os.path.exists('%s/opt/optimize-images/vendor/linux/%s' % (get_python_lib(), name)):
+        return '%s/opt/optimize-images/vendor/linux/%s' % (get_python_lib(), name)
+    elif os.path.exists('/opt/optimize-images/vendor/linux/%s' % name):
+        return '/opt/optimize-images/vendor/linux/%s' % name
+    return None
 
 
 def format_bytes(value):
@@ -92,7 +101,8 @@ def optimize_image(source_path=None, image_buffer=None, filename=None, quality=8
 
         destination = '%s%s.optimize.%s' % (tmp_dir, filename, extension)
 
-    command = ['%scjpeg' % BASE_PATH, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source_path]
+    lib_path = get_lib_path('cjpeg')
+    command = [lib_path, '-quality', '%s' % quality, '-optimize', '-progressive', '-outfile', destination, source_path]
     run_command(command)
 
     original_size = get_file_size(source_path)
