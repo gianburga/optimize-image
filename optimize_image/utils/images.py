@@ -118,7 +118,6 @@ def optimize_image(source_path=None, image_buffer=None, filename=None, quality=8
     logger.debug('%.0f%% smaller', 100 - ((float(optimize_size) / float(original_size)) * 100))
 
     buffer_image = get_buffer_from_file(destination)
-    image = Image.open(buffer_image)
 
     return {
         'filename': filename, 
@@ -128,5 +127,5 @@ def optimize_image(source_path=None, image_buffer=None, filename=None, quality=8
         'extension': extension, 
         'content_type': content_type,
         'size': optimize_image,
-        'image': image
+        'image': buffer_image,
     }
